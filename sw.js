@@ -1,34 +1,52 @@
-let timerId = null;
-
-// Bildirim gönderme fonksiyonu
-const sendWaterNotification = () => {
-    self.registration.showNotification('BİK Pro 💧', {
-        body: 'su içme vaktiii! Hadi bir bardak tazelen.',
-        icon: 'https://via.placeholder.com/128/ff6b81/ffffff?text=BIK',
-        badge: 'https://via.placeholder.com/128/ff6b81/ffffff?text=BIK',
-        vibrate: [300, 100, 300],
-        tag: 'su-bildirim',
-        renotify: true
-    });
-};
+let timer = null;
+let lastInterval = null;
 
 self.addEventListener('message', event => {
     if (event.data.type === 'START_TIMER') {
         const interval = event.data.interval;
-        if (timerId) clearInterval(timerId);
+        lastInterval = interval;
         
-        // İlk bildirimi hemen değil, belirlenen süre sonra atar
-        timerId = setInterval(sendWaterNotification, interval);
-        console.log("Zamanlayıcı başlatıldı: " + interval + "ms");
-    } 
-    
+        if (timer) clearInterval(timer);
+        
+        // Zamanlayıcıyı başlat
+        timer = setInterval(() => {
+            showWaterNotification();
+        }, interval);
+
+        console.log("Zamanlayıcı aktif: " + interval + "ms");
+    }
+
     if (event.data.type === 'STOP_TIMER') {
-        clearInterval(timerId);
-        console.log("Zamanlayıcı durduruldu.");
+        if (timer) clearInterval(timer);
+        timer = null;
     }
 });
 
-// Service Worker'ın uykudan uyanmasını sağlar
+// Bildirim gönderme fonksiyonu
+function showWaterNotification() {
+    const options = {
+        body: 'Su içme vaktin geldi! Hadi bir bardak daha... 💧',
+        icon: 'https://via.placeholder.com/192/ff6b81/ffffff?text=BIK',
+        badge: 'https://via.placeholder.com/128/ff6b81/ffffff?text=BIK',
+        vibrate: [200, 100, 200, 100, 200],
+        tag: 'su-hatirlatici',
+        renotify: true, // Aynı bildirim gelse bile tekrar titret
+        requireInteraction: true // Kullanıcı kapatana kadar ekranda kalmaya çalışır
+    };
+
+    self.registration.showNotification('BİK Pro 🌸', options);
+}
+
+// KRİTİK: Service Worker'ın uykuda ölmesini engellemek için
+self.addEventListener('install', event => {
+    self.skipWaiting();
+});
+
+self.addEventListener('activate', event => {
+    event.waitUntil(clients.claim());
+});
+
+// Tarayıcı bu dosyayı durdurmaya çalışırsa kendini yenilemesi için küçük bir hile
 self.addEventListener('push', event => {
-    sendWaterNotification();
+    showWaterNotification();
 });
