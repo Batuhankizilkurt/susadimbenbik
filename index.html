@@ -23,29 +23,15 @@
         }
         
         /* Arka Plandaki Çiçek Yağmuru */
-        #flower-container { 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            pointer-events: none; 
-            z-index: 0; 
-        }
-        .flower { 
-            position: absolute; 
-            color: rgba(255, 182, 193, 0.7); 
-            font-size: 24px; 
-            animation: fall linear infinite; 
-            pointer-events: none; 
-        }
+        #flower-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+        .flower { position: absolute; color: rgba(255, 182, 193, 0.7); font-size: 24px; animation: fall linear infinite; pointer-events: none; }
         @keyframes fall {
             0% { transform: translateY(-100px) rotate(0deg); opacity: 0; }
             10% { opacity: 1; }
             100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
         }
 
-        /* Kartlar (İçerik Çiçeklerin Önünde) */
+        /* Kartlar */
         .card { 
             background: white; 
             width: 100%; 
@@ -61,36 +47,19 @@
         }
         h1 { color: var(--pink); margin: 0 0 10px 0; font-size: 32px; letter-spacing: -1px; }
         
-        /* Animasyonlu Su Bardağı */
+        /* Su Bardağı */
         .glass { 
-            width: 100px; 
-            height: 140px; 
-            border: 5px solid #333; 
-            border-bottom-left-radius: 20px; 
-            border-bottom-right-radius: 20px; 
-            margin: 20px auto; 
-            position: relative; 
-            overflow: hidden; 
-            background: #fff; 
+            width: 100px; height: 140px; border: 5px solid #333; 
+            border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; 
+            margin: 20px auto; position: relative; overflow: hidden; background: #fff; 
         }
         .water { 
-            position: absolute; 
-            bottom: 0; 
-            width: 100%; 
-            height: 0%; 
-            background: var(--blue); 
-            transition: height 1s cubic-bezier(0.4, 0, 0.2, 1); 
+            position: absolute; bottom: 0; width: 100%; height: 0%; 
+            background: var(--blue); transition: height 1s cubic-bezier(0.4, 0, 0.2, 1); 
         }
         .water::after { 
-            content: ""; 
-            position: absolute; 
-            top: -10px; 
-            left: -50%; 
-            width: 200%; 
-            height: 20px; 
-            background: rgba(255,255,255,0.3); 
-            border-radius: 40%; 
-            animation: wave 3s infinite linear; 
+            content: ""; position: absolute; top: -10px; left: -50%; width: 200%; height: 20px; 
+            background: rgba(255,255,255,0.3); border-radius: 40%; animation: wave 3s infinite linear; 
         }
         @keyframes wave { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
@@ -101,9 +70,7 @@
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
         .btn-blue { background: var(--blue); }
         
-        /* Şans Kurabiyesi Tasarımı */
-        .cookie-box { background: #fff3cd; border: 2px dashed #f39c12; padding: 20px; border-radius: 20px; cursor: pointer; transition: 0.3s; }
-        .cookie-box:hover { transform: translateY(-2px); }
+        .cookie-box { background: #fff3cd; border: 2px dashed #f39c12; padding: 20px; border-radius: 20px; cursor: pointer; }
         #fortuneText { margin-top: 10px; font-style: italic; color: #856404; min-height: 24px; }
         
         #status { font-weight: bold; color: #555; font-size: 18px; }
@@ -123,7 +90,7 @@
         </div>
 
         <input type="number" id="goal" placeholder="Günlük Hedef (ml)" value="2000">
-        <input type="number" id="mins" placeholder="Kaç dakikada bir hatırlatayım?">
+        <input type="number" id="mins" placeholder="Kaç dakikada bir?">
         
         <button onclick="setupReminder()" id="startBtn">Hatırlatıcıyı Başlat</button>
         
@@ -138,26 +105,17 @@
 
     <div class="card cookie-box" onclick="getFortune()">
         <strong>🥠 Şans Kurabiyesi</strong>
-        <div id="fortuneText">Dokun ve kaderini gör...</div>
+        <div id="fortuneText">Kaderine dokun...</div>
     </div>
 
     <script>
         let drank = parseInt(localStorage.getItem('drank')) || 0;
-        const fortunes = [
-            "Bugün harika bir sürpriz seni bekliyor!", 
-            "Su içmek seni daha zinde yapacak.", 
-            "İrem seni çok seviyor, unutma!", 
-            "Beklediğin o haber yolda...", 
-            "Lord Batuhan, bugün senin günün!",
-            "Küçük adımlar büyük mucizeler doğurur.",
-            "Gülümse, çünkü her şey yoluna girecek.",
-            "Bugün şansın hiç olmadığı kadar açık."
-        ];
+        const fortunes = ["Bugün şansın dönecek!", "Su içmek seni parlatır.", "İrem seni çok seviyor!", "Güzel haber yolda.", "Lord Batuhan, bugün parlıyorsun!"];
 
-        // Service Worker Kaydı (Her zaman en güncel sürümü çekmesi için)
         if ('serviceWorker' in navigator) {
+            // Her zaman en güncel Service Worker'ı zorla yükle
             navigator.serviceWorker.register('sw.js?v=' + Date.now()).then(reg => {
-                console.log("BİK Pro Hazır!");
+                console.log("BİK Aktif!");
             });
         }
 
@@ -166,59 +124,46 @@
             const percent = Math.min((drank / target) * 100, 100);
             document.getElementById('water').style.height = percent + "%";
             document.getElementById('status').innerText = `Bugün: ${drank} / ${target} ml`;
-            
-            if(drank >= target) {
-                document.getElementById('goalMsg').style.display = "block";
-            } else {
-                document.getElementById('goalMsg').style.display = "none";
-            }
+            document.getElementById('goalMsg').style.display = (drank >= target) ? "block" : "none";
         }
 
-        function drink(ml) { 
-            drank += ml; 
-            localStorage.setItem('drank', drank); 
-            updateUI(); 
-        }
+        function drink(ml) { drank += ml; localStorage.setItem('drank', drank); updateUI(); }
 
         async function setupReminder() {
             const m = document.getElementById('mins').value;
-            if(!m || m <= 0) return alert("Lütfen geçerli bir dakika gir!");
+            if(!m || m <= 0) return alert("Dakika gir!");
             
             const perm = await Notification.requestPermission();
+            
             if(perm === 'granted') {
                 const reg = await navigator.serviceWorker.ready;
                 
-                // Arka plan işçisine komutu gönder
-                reg.active.postMessage({ 
-                    type: 'START_TIMER', 
-                    interval: parseInt(m) * 60000 
-                });
+                // Önce her şeyi durdurup temizle
+                reg.active.postMessage({ type: 'STOP_TIMER' });
+                
+                // Yarım saniye bekle ve taze zamanlayıcıyı başlat
+                setTimeout(() => {
+                    reg.active.postMessage({ 
+                        type: 'START_TIMER', 
+                        interval: parseInt(m) * 60000 
+                    });
+                }, 500);
 
-                // Test bildirimi
+                // İLK TEST BİLDİRİMİ (Gelmeli!)
                 new Notification("BİK Pro 🌸", { 
-                    body: m + " dakikada bir sana hatırlatacağım. Uygulamayı arka planda açık bırak!",
+                    body: m + " dakika sonra hatırlatacağım Lordum. Ekranı kilitleyebilirsin!",
                     icon: 'https://via.placeholder.com/192/ff6b81/ffffff?text=BIK'
                 });
-                alert("Hatırlatıcı başarıyla kuruldu! Arka planda çalışmaya devam edecek.");
+                
+                alert("Kuruldu! Uygulamayı kapatma (orta tuşla çık), ekranı kilitle.");
             } else {
-                alert("Bildirim izni vermen gerekiyor Lordum!");
+                alert("Bildirim izni vermen lazım.");
             }
         }
 
-        function getFortune() { 
-            const text = fortunes[Math.floor(Math.random() * fortunes.length)];
-            document.getElementById('fortuneText').innerText = text; 
-        }
-
-        function resetData() { 
-            if(confirm("Bugünkü verileri sıfırlamak istiyor musun?")) { 
-                drank = 0; 
-                localStorage.setItem('drank', 0); 
-                updateUI(); 
-            } 
-        }
-
-        // Arka Plandaki Çiçek Yağmuru Fonksiyonu
+        function getFortune() { document.getElementById('fortuneText').innerText = fortunes[Math.floor(Math.random() * fortunes.length)]; }
+        function resetData() { if(confirm("Sıfırlansın mı?")) { drank=0; localStorage.setItem('drank',0); updateUI(); } }
+        
         function createFlowers() {
             const container = document.getElementById('flower-container');
             const emojis = ['🌸', '🌺', '💮', '💐'];
@@ -234,7 +179,6 @@
             }
         }
         
-        // Başlangıç Ayarları
         createFlowers();
         updateUI();
     </script>
