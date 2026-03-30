@@ -1,19 +1,23 @@
 let timer = null;
-let lastInterval = null;
 
 self.addEventListener('message', event => {
     if (event.data.type === 'START_TIMER') {
         const interval = event.data.interval;
-        lastInterval = interval;
         
         if (timer) clearInterval(timer);
         
-        // Zamanlayıcıyı başlat
+        // Sistemi uyanık tutmak için "Self-Wakeup" mantığı
         timer = setInterval(() => {
-            showWaterNotification();
+            self.registration.showNotification('BİK Pro 💧', {
+                body: 'Su içme vaktin geldi! Hadi bir bardak daha... 🌸',
+                icon: 'https://via.placeholder.com/192/ff6b81/ffffff?text=BIK',
+                badge: 'https://via.placeholder.com/128/ff6b81/ffffff?text=BIK',
+                vibrate: [500, 110, 500, 110, 450, 110, 200, 110, 170, 40, 450, 110, 200, 110, 170, 40],
+                tag: 'su-hatirlatici',
+                renotify: true,
+                requireInteraction: true // Ekran kilidinde daha görünür kalması için
+            });
         }, interval);
-
-        console.log("Zamanlayıcı aktif: " + interval + "ms");
     }
 
     if (event.data.type === 'STOP_TIMER') {
@@ -22,31 +26,11 @@ self.addEventListener('message', event => {
     }
 });
 
-// Bildirim gönderme fonksiyonu
-function showWaterNotification() {
-    const options = {
-        body: 'Su içme vaktin geldi! Hadi bir bardak daha... 💧',
-        icon: 'https://via.placeholder.com/192/ff6b81/ffffff?text=BIK',
-        badge: 'https://via.placeholder.com/128/ff6b81/ffffff?text=BIK',
-        vibrate: [200, 100, 200, 100, 200],
-        tag: 'su-hatirlatici',
-        renotify: true, // Aynı bildirim gelse bile tekrar titret
-        requireInteraction: true // Kullanıcı kapatana kadar ekranda kalmaya çalışır
-    };
-
-    self.registration.showNotification('BİK Pro 🌸', options);
-}
-
-// KRİTİK: Service Worker'ın uykuda ölmesini engellemek için
+// Service Worker'ın kilitli ekranda ölmesini engellemek için aktif tutma
 self.addEventListener('install', event => {
     self.skipWaiting();
 });
 
 self.addEventListener('activate', event => {
     event.waitUntil(clients.claim());
-});
-
-// Tarayıcı bu dosyayı durdurmaya çalışırsa kendini yenilemesi için küçük bir hile
-self.addEventListener('push', event => {
-    showWaterNotification();
 });
