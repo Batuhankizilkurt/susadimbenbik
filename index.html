@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BİK Su Pro</title>
+    <link rel="manifest" href="manifest.json">
+    <!-- iOS için tam ekran modu -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <style>
+        :root { --pink: #ff6b81; --blue: #3498db; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #ffebef; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        
+        .card { background: white; width: 100%; max-width: 380px; padding: 25px; border-radius: 30px; box-shadow: 0 10px 30px rgba(255,107,129,0.15); text-align: center; margin-bottom: 20px; box-sizing: border-box; }
+        h1 { color: var(--pink); margin: 0 0 10px 0; font-size: 32px; letter-spacing: -1px; }
+        
+        /* Animasyonlu Bardak */
+        .glass { width: 100px; height: 140px; border: 5px solid #333; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; margin: 20px auto; position: relative; overflow: hidden; background: #fff; box-shadow: inset 0 0 10px rgba(0,0,0,0.1); }
+        .water { position: absolute; bottom: 0; width: 100%; height: 0%; background: var(--blue); transition: height 1s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        /* Dalga Efekti */
+        .water::after { content: ""; position: absolute; top: -10px; left: -50%; width: 200%; height: 20px; background: rgba(255,255,255,0.3); border-radius: 40%; animation: moveWave 3s infinite linear; }
+        @keyframes moveWave { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        input, button { width: 100%; padding: 15px; margin: 8px 0; border-radius: 15px; border: 1px solid #ddd; font-size: 16px; box-sizing: border-box; outline: none; }
+        button { background: var(--pink); color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:active { transform: scale(0.95); }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .btn-blue { background: var(--blue); padding: 12px; font-size: 14px; }
+        
+        /* Şans Kurabiyesi Bölümü */
+        .cookie-box { background: #fff3cd; border: 2px dashed #f39c12; padding: 20px; border-radius: 20px; margin-top: 10px; cursor: pointer; transition: 0.3s; }
+        .cookie-box:hover { transform: translateY(-3px); }
+        #fortuneText { font-size: 15px; margin-top: 10px; font-style: italic; color: #856404; min-height: 20px; }
+        
+        #goalMsg { color: #27ae60; font-weight: bold; display: none; margin-bottom: 15px; font-size: 18px; border: 2px solid #27ae60; padding: 10px; border-radius: 15px; }
+        #status { font-weight: bold; color: #555; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h1>BİK Pro 💧</h1>
+        <div id="goalMsg">HEDEF TAMAMLANDI! 🎉<br>Harikasın Lordum.</div>
+        <div id="status">Bugün: 0 / 2000 ml</div>
+        
+        <div class="glass">
+            <div id="water" class="water"></div>
+        </div>
+
+        <input type="number" id="goal" placeholder="Günlük Hedef (ml)" value="2000">
+        <input type="number" id="mins" placeholder="Hatırlatma Sıklığı (Dakika)">
+        
+        <button onclick="setupReminder()" id="startBtn">Hatırlatıcıyı Başlat</button>
+        
+        <div class="grid">
+            <button class="btn-blue" onclick="drink(150)">+150ml</button>
+            <button class="btn-blue" onclick="drink(200)">+200ml</button>
+            <button class="btn-blue" onclick="drink(300)">+300ml</button>
+            <button class="btn-blue" onclick="drink(500)">+500ml</button>
+        </div>
+        <button onclick="resetAll()" style="background:#bbb; font-size:12px; padding:8px; margin-top:15px; width:50%;">Sıfırla</button>
+    </div>
+
+    <div class="card cookie-box" onclick="getFortune()">
+        <strong>🥠 Şans Kurabiyesi</strong>
+        <div id="fortuneText">Dokun ve bugünün mesajını gör...</div>
+    </div>
+
+    <script>
+        let drank = parseInt(localStorage.getItem('drank')) || 0;
+        
+        const fortunes = [
+            "Bugün harika bir şey olacak, hazır ol.", "Su içmek sana çok yakışıyor.", "Gülümse, çünkü yapabilirsin.", "Yarının temeli bugün atılır.", "Bugün kendine bir iyilik yap.", 
+            "Beklenmedik bir yerden müjde var.", "Enerjin çevreni aydınlatıyor.", "Vazgeçme, mucizeler zaman alır.", "Hayat, sen plan yaparken başından geçenlerdir.", "Kendi şansını kendin yarat.",
+            "İçindeki sesi dinle, o doğruyu biliyor.", "Bugün cesur ol, fark yarat.", "Küçük adımlar büyük sonuçlar doğurur.", "Sen düşündüğünden daha güçlüsün.", "Gökkuşağı için yağmura katlanmalısın.",
+            "Sevdiğin birine 'Seni seviyorum' de.", "İyilik yap, denize at.", "Sabır acıdır ama meyvesi tatlıdır.", "Hayat kısa, anı yaşa.", "Gülmek en iyi ilaçtır."
+        ];
+
+        // Service Worker Kaydı
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').then(() => {
+                console.log("Service Worker Kayıt Başarılı!");
+            });
+        }
+
+        function updateUI() {
+            const target = document.getElementById('goal').value || 2000;
+            const percent = Math.min((drank / target) * 100, 100);
+            document.getElementById('water').style.height = percent + "%";
+            document.getElementById('status').innerText = `Bugün: ${drank} / ${target} ml`;
+            
+            if(drank >= target) {
+                document.getElementById('goalMsg').style.display = "block";
+                // Hedef dolunca bildirimleri durdur
+                if (navigator.serviceWorker.controller) {
+                    navigator.serviceWorker.controller.postMessage({type:'STOP_TIMER'});
+                }
+            } else {
+                document.getElementById('goalMsg').style.display = "none";
+            }
+        }
+
+        function drink(ml) {
+            drank += ml;
+            localStorage.setItem('drank', drank);
+            updateUI();
+        }
+
+        async function setupReminder() {
+            const m = document.getElementById('mins').value;
+            if(!m) return alert("Lütfen hatırlatma süresini girin!");
+            
+            const permission = await Notification.requestPermission();
+            
+            if(permission === 'granted') {
+                const registration = await navigator.serviceWorker.ready;
+                
+                // Arka plan işçisine süreyi gönder
+                registration.active.postMessage({ 
+                    type: 'START_TIMER', 
+                    interval: m * 60000 
+                });
+
+                // Test bildirimi (Sistemin çalıştığını teyit etmek için)
+                new Notification("BİK Pro 💧", {
+                    body: "Hatırlatıcı kuruldu! Su içme vaktiii yazısını göreceksin.",
+                    icon: "https://via.placeholder.com/128/ff6b81/ffffff?text=BIK"
+                });
+
+                alert("Harika! Bildirimler aktif edildi. Uygulamayı arka planda bırakmayı unutma.");
+            } else {
+                alert("Bildirim izni reddedildi. Lütfen ayarlardan izin ver!");
+            }
+        }
+
+        function getFortune() {
+            const text = fortunes[Math.floor(Math.random() * fortunes.length)];
+            document.getElementById('fortuneText').innerText = text;
+        }
+
+        function resetAll() {
+            if(confirm("Bugünkü veriler sıfırlansın mı?")) {
+                drank = 0;
+                localStorage.setItem('drank', 0);
+                updateUI();
+            }
+        }
+
+        // İlk açılışta verileri yükle
+        updateUI();
+    </script>
+</body>
+</html>

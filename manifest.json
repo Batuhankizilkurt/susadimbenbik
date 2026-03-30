@@ -1,0 +1,22 @@
+{
+  "name": "BİK Su Takip Pro",
+  "short_name": "BİK Pro",
+  "description": "Su hatırlatıcısı ve şans kurabiyesi uygulaması",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#ffebef",
+  "theme_color": "#ff6b81",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192/ff6b81/ffffff?text=BIK",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://via.placeholder.com/512/ff6b81/ffffff?text=BIK",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
