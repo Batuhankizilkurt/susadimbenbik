@@ -12,14 +12,9 @@
         body { 
             font-family: 'Segoe UI', sans-serif; 
             background: #ffebef; 
-            margin: 0; 
-            padding: 20px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            min-height: 100vh; 
-            position: relative; 
-            overflow-x: hidden; 
+            margin: 0; padding: 20px; 
+            display: flex; flex-direction: column; align-items: center; 
+            min-height: 100vh; position: relative; overflow-x: hidden; 
         }
         
         /* Arka Plandaki Çiçek Yağmuru */
@@ -31,23 +26,15 @@
             100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
         }
 
-        /* Kartlar */
+        /* Ana Kart Tasarımı */
         .card { 
-            background: white; 
-            width: 100%; 
-            max-width: 380px; 
-            padding: 25px; 
-            border-radius: 30px; 
-            box-shadow: 0 10px 30px rgba(255,107,129,0.15); 
-            text-align: center; 
-            margin-bottom: 20px; 
-            box-sizing: border-box; 
-            position: relative; 
-            z-index: 10; 
+            background: white; width: 100%; max-width: 380px; padding: 25px; 
+            border-radius: 30px; box-shadow: 0 10px 30px rgba(255,107,129,0.15); 
+            text-align: center; margin-bottom: 20px; box-sizing: border-box; 
+            position: relative; z-index: 10; 
         }
         h1 { color: var(--pink); margin: 0 0 10px 0; font-size: 32px; letter-spacing: -1px; }
         
-        /* Su Bardağı */
         .glass { 
             width: 100px; height: 140px; border: 5px solid #333; 
             border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; 
@@ -82,14 +69,12 @@
 
     <div class="card">
         <h1>BİK Pro 💧</h1>
-        <div id="goalMsg">HEDEF TAMAMLANDI! 🎉<br>Harikasın Lordum.</div>
+        <div id="goalMsg">HEDEF TAMAMLANDI! 🎉</div>
         <div id="status">Bugün: 0 / 2000 ml</div>
         
-        <div class="glass">
-            <div id="water" class="water"></div>
-        </div>
+        <div class="glass"><div id="water" class="water"></div></div>
 
-        <input type="number" id="goal" placeholder="Günlük Hedef (ml)" value="2000">
+        <input type="number" id="goal" placeholder="Hedef (ml)" value="2000">
         <input type="number" id="mins" placeholder="Kaç dakikada bir?">
         
         <button onclick="setupReminder()" id="startBtn">Hatırlatıcıyı Başlat</button>
@@ -100,22 +85,21 @@
             <button class="btn-blue" onclick="drink(300)">+300ml</button>
             <button class="btn-blue" onclick="drink(500)">+500ml</button>
         </div>
-        <button onclick="resetData()" style="background:#bbb; margin-top:15px; padding:8px; font-size:12px; width:50%;">Verileri Sıfırla</button>
+        <button onclick="resetData()" style="background:#bbb; margin-top:15px; padding:8px; font-size:12px; width:50%;">Sıfırla</button>
     </div>
 
     <div class="card cookie-box" onclick="getFortune()">
         <strong>🥠 Şans Kurabiyesi</strong>
-        <div id="fortuneText">Kaderine dokun...</div>
+        <div id="fortuneText">Dokun ve gör...</div>
     </div>
 
     <script>
         let drank = parseInt(localStorage.getItem('drank')) || 0;
-        const fortunes = ["Bugün şansın dönecek!", "Su içmek seni parlatır.", "İrem seni çok seviyor!", "Güzel haber yolda.", "Lord Batuhan, bugün parlıyorsun!"];
+        const fortunes = ["Harika bir gün!", "Su hayattır!", "İrem seni çok seviyor!", "Şans kapıda!", "Lord Batuhan bugün çok enerjik!"];
 
         if ('serviceWorker' in navigator) {
-            // Her zaman en güncel Service Worker'ı zorla yükle
             navigator.serviceWorker.register('sw.js?v=' + Date.now()).then(reg => {
-                console.log("BİK Aktif!");
+                console.log("Service Worker Kayıt Edildi.");
             });
         }
 
@@ -127,42 +111,49 @@
             document.getElementById('goalMsg').style.display = (drank >= target) ? "block" : "none";
         }
 
-        function drink(ml) { drank += ml; localStorage.setItem('drank', drank); updateUI(); }
+        function drink(ml) { 
+            drank += ml; 
+            localStorage.setItem('drank', drank); 
+            updateUI(); 
+        }
 
         async function setupReminder() {
             const m = document.getElementById('mins').value;
             if(!m || m <= 0) return alert("Dakika gir!");
             
+            // Bildirim İzni İste
             const perm = await Notification.requestPermission();
             
             if(perm === 'granted') {
                 const reg = await navigator.serviceWorker.ready;
                 
-                // Önce her şeyi durdurup temizle
-                reg.active.postMessage({ type: 'STOP_TIMER' });
-                
-                // Yarım saniye bekle ve taze zamanlayıcıyı başlat
-                setTimeout(() => {
-                    reg.active.postMessage({ 
-                        type: 'START_TIMER', 
-                        interval: parseInt(m) * 60000 
-                    });
-                }, 500);
+                // Zamanlayıcıyı başlatması için Service Worker'a mesaj at
+                reg.active.postMessage({ 
+                    type: 'START_TIMER', 
+                    interval: parseInt(m) * 60000 
+                });
 
-                // İLK TEST BİLDİRİMİ (Gelmeli!)
+                // ANLIK İLK TEST BİLDİRİMİ (Bu gelirse sistem uyanık demektir)
                 new Notification("BİK Pro 🌸", { 
-                    body: m + " dakika sonra hatırlatacağım Lordum. Ekranı kilitleyebilirsin!",
+                    body: m + " dakikada bir sana hatırlatacağım. Ekranı kilitleyebilirsin!",
                     icon: 'https://via.placeholder.com/192/ff6b81/ffffff?text=BIK'
                 });
                 
                 alert("Kuruldu! Uygulamayı kapatma (orta tuşla çık), ekranı kilitle.");
             } else {
-                alert("Bildirim izni vermen lazım.");
+                alert("Bildirim izni vermen lazım Lordum.");
             }
         }
 
-        function getFortune() { document.getElementById('fortuneText').innerText = fortunes[Math.floor(Math.random() * fortunes.length)]; }
-        function resetData() { if(confirm("Sıfırlansın mı?")) { drank=0; localStorage.setItem('drank',0); updateUI(); } }
+        function getFortune() { 
+            document.getElementById('fortuneText').innerText = fortunes[Math.floor(Math.random() * fortunes.length)]; 
+        }
+
+        function resetData() { 
+            if(confirm("Sıfırlansın mı?")) { 
+                drank=0; localStorage.setItem('drank',0); updateUI(); 
+            } 
+        }
         
         function createFlowers() {
             const container = document.getElementById('flower-container');
