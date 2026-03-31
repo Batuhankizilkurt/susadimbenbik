@@ -5,51 +5,65 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BİK Pro 🌸</title>
     
+    <!-- OneSignal SDK Bağlantısı -->
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script>
       window.OneSignalDeferred = window.OneSignalDeferred || [];
       OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({
-          appId: "1L1pgfmUW1NJ2jpawQJtKe6lTOfA",
-          safari_web_id: "web.onesignal.auto.10427838-8984-48f0-974a-19597375e81d",
-          notifyButton: { enable: false }, // Kendi butonumuzu kullanacağız
+          appId: "prj_1L1pgfmUW1NJ2jpawQJtKe6lTOfA",
+          safari_web_id: "web.onesignal.auto.10427838-8984-48f0-974a-19597375e81d", // Otomatik ID
+          notifyButton: { enable: false }, 
         });
       });
     </script>
 
     <style>
         :root { --pink: #ff6b81; --blue: #3498db; }
-        body { font-family: 'Segoe UI', sans-serif; background: #ffebef; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; position: relative; }
+        body { 
+            font-family: 'Segoe UI', sans-serif; background: #ffebef; 
+            margin: 0; padding: 20px; display: flex; flex-direction: column; 
+            align-items: center; min-height: 100vh; overflow-x: hidden; position: relative; 
+        }
         
         /* Çiçek Yağmuru */
         #flower-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
         .flower { position: absolute; color: rgba(255, 182, 193, 0.7); font-size: 24px; animation: fall linear infinite; }
         @keyframes fall { 0% { transform: translateY(-100px) rotate(0deg); opacity: 0; } 10% { opacity: 1; } 100% { transform: translateY(110vh) rotate(360deg); opacity: 0; } }
 
-        .card { background: white; width: 100%; max-width: 380px; padding: 25px; border-radius: 30px; box-shadow: 0 10px 30px rgba(255,107,129,0.15); text-align: center; margin-bottom: 20px; position: relative; z-index: 10; box-sizing: border-box; }
-        h1 { color: var(--pink); margin: 0 0 10px 0; font-size: 32px; }
+        .card { 
+            background: white; width: 100%; max-width: 380px; padding: 25px; 
+            border-radius: 30px; box-shadow: 0 10px 30px rgba(255,107,129,0.15); 
+            text-align: center; margin-bottom: 20px; position: relative; z-index: 10; box-sizing: border-box; 
+        }
+        h1 { color: var(--pink); margin: 0 0 10px 0; font-size: 32px; letter-spacing: -1px; }
         
-        .glass { width: 100px; height: 140px; border: 5px solid #333; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; margin: 20px auto; position: relative; overflow: hidden; background: #fff; }
+        .glass { 
+            width: 100px; height: 140px; border: 5px solid #333; border-bottom-left-radius: 20px; 
+            border-bottom-right-radius: 20px; margin: 20px auto; position: relative; overflow: hidden; background: #fff; 
+        }
         .water { position: absolute; bottom: 0; width: 100%; height: 0%; background: var(--blue); transition: height 1s ease; }
         
         button { width: 100%; padding: 15px; margin: 8px 0; border-radius: 15px; border: none; font-size: 16px; font-weight: bold; cursor: pointer; color: white; background: var(--pink); transition: 0.2s; }
         button:active { transform: scale(0.96); }
         .btn-blue { background: var(--blue); }
-        .btn-gold { background: #f39c12; margin-top: 15px; }
+        .btn-gold { background: #f39c12; margin-top: 15px; border: 2px solid #fff; box-shadow: 0 4px 10px rgba(243,156,18,0.3); }
 
         #status { font-weight: bold; color: #555; font-size: 18px; margin: 10px 0; }
         .cookie-box { background: #fff3cd; border: 2px dashed #f39c12; padding: 20px; border-radius: 20px; cursor: pointer; }
+        #fortuneText { margin-top: 10px; font-style: italic; color: #856404; min-height: 24px; }
     </style>
 </head>
 <body>
     <div id="flower-container"></div>
 
     <div class="card">
-        <h1>BİK Pro 💧</h1>
+        <h1>BİK Pro 🌸</h1>
         <div id="status">Bugün: 0 / 2000 ml</div>
         <div class="glass"><div id="water" class="water"></div></div>
         
-        <button onclick="subscribeUser()" class="btn-gold">BİLDİRİMLERE İZİN VER 🔔</button>
+        <!-- KRİTİK BUTON: OneSignal İzni Alır -->
+        <button onclick="subscribeUser()" class="btn-gold">BİLDİRİMLERİ AKTİF ET 🔔</button>
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
             <button class="btn-blue" onclick="drink(150)">+150ml</button>
@@ -57,17 +71,23 @@
             <button class="btn-blue" onclick="drink(300)">+300ml</button>
             <button class="btn-blue" onclick="drink(500)">+500ml</button>
         </div>
-        <button onclick="resetData()" style="background:#bbb; font-size:12px; padding:8px;">Verileri Sıfırla</button>
+        <button onclick="resetData()" style="background:#bbb; font-size: 12px; padding: 8px; width: 50%; margin: 15px auto;">Sıfırla</button>
     </div>
 
     <div class="card cookie-box" onclick="getFortune()">
         <strong>🥠 Şans Kurabiyesi</strong>
-        <div id="fortuneText">Dokun ve kaderini gör...</div>
+        <div id="fortuneText">Dokun ve gör...</div>
     </div>
 
     <script>
         let drank = parseInt(localStorage.getItem('drank')) || 0;
-        const fortunes = ["Bugün harika bir sürpriz seni bekliyor!", "Su içmek seni parlatır.", "İrem seni çok seviyor!", "Lord Batuhan, bugün senin günün!"];
+        const fortunes = [
+            "Bugün şansın dönecek!", 
+            "Su içmek seni parlatır.", 
+            "İrem seni çok seviyor!", 
+            "Beklediğin o haber yolda.", 
+            "Lord Batuhan, bugün enerjin çok yüksek!"
+        ];
 
         function updateUI() {
             const target = 2000;
@@ -76,9 +96,23 @@
             document.getElementById('status').innerText = `Bugün: ${drank} / ${target} ml`;
         }
 
-        function drink(ml) { drank += ml; localStorage.setItem('drank', drank); updateUI(); }
-        function resetData() { if(confirm("Sıfırlansın mı?")) { drank=0; localStorage.setItem('drank',0); updateUI(); } }
-        function getFortune() { document.getElementById('fortuneText').innerText = fortunes[Math.floor(Math.random()*fortunes.length)]; }
+        function drink(ml) { 
+            drank += ml; 
+            localStorage.setItem('drank', drank); 
+            updateUI(); 
+        }
+
+        function resetData() { 
+            if(confirm("Veriler sıfırlansın mı?")) { 
+                drank = 0; 
+                localStorage.setItem('drank', 0); 
+                updateUI(); 
+            } 
+        }
+
+        function getFortune() { 
+            document.getElementById('fortuneText').innerText = fortunes[Math.floor(Math.random() * fortunes.length)]; 
+        }
 
         // OneSignal Kayıt Fonksiyonu
         function subscribeUser() {
@@ -89,12 +123,18 @@
 
         function createFlowers() {
             const container = document.getElementById('flower-container');
+            const emojis = ['🌸', '🌺', '💮', '💐'];
             for (let i = 0; i < 20; i++) {
-                const f = document.createElement('div'); f.className = 'flower'; f.innerText = '🌸';
-                f.style.left = Math.random()*100+'vw'; f.style.animationDuration = (Math.random()*5+4)+'s';
-                f.style.animationDelay = (Math.random()*5)+'s'; container.appendChild(f);
+                const f = document.createElement('div');
+                f.className = 'flower';
+                f.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                f.style.left = Math.random() * 100 + 'vw';
+                f.style.animationDuration = (Math.random() * 5 + 4) + 's';
+                f.style.animationDelay = (Math.random() * 5) + 's';
+                container.appendChild(f);
             }
         }
+
         createFlowers();
         updateUI();
     </script>
