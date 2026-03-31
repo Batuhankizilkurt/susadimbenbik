@@ -8,14 +8,17 @@
     <!-- OneSignal SDK - Senin Gerçek App ID'n Tanımlandı -->
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script>
-      window.OneSignalDeferred = window.OneSignalDeferred || [];
-      OneSignalDeferred.push(async function(OneSignal) {
-        await OneSignal.init({
-          appId: "d922022c-39cf-4106-967e-3389f8902f1f",
-          safari_web_id: "web.onesignal.auto.10427838-8984-48f0-974a-19597375e81d",
-          notifyButton: { enable: false }, 
-        });
-      });
+     // index.html içindeki script kısmını bununla değiştir
+window.OneSignalDeferred = window.OneSignalDeferred || [];
+OneSignalDeferred.push(async function(OneSignal) {
+  await OneSignal.init({
+    appId: "d922022c-39cf-4106-967e-3389f8902f1f",
+    // Safari Web ID'yi aşağıdakine göre güncelle veya ekle
+    safari_web_id: "web.onesignal.auto.10427838-8984-48f0-974a-19597375e81d",
+    notifyButton: { enable: false },
+    allowLocalhostAsSecureOrigin: true, // Testlerin çakışmaması için
+  });
+});
     </script>
 
     <style>
