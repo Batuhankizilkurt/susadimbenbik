@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BİK Pro 🌸</title>
     
-    <!-- OneSignal SDK Yükleme -->
+    <!-- OneSignal SDK -->
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     
     <script>
@@ -13,49 +13,106 @@
       OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({
           appId: "d922022c-39cf-4106-967e-3389f8902f1f",
-          notifyButton: {
-            enable: false,
-          },
+          notifyButton: { enable: false },
           allowLocalhostAsSecureOrigin: true,
+          // iPhone'u zorlayan gizli ayar
+          serviceWorkerParam: { scope: "/" },
+          serviceWorkerPath: "OneSignalSDKWorker.js",
         });
       });
 
-      // Sarı butonuna basınca çalışacak fonksiyon
-      async function aboneOl() {
+      async function bildirimAc() {
         try {
           await OneSignal.Slidedown.showHttpPrompt();
-        } catch (e) {
-          console.error("Bildirim hatası:", e);
-        }
+          alert("Bildirim tüneli açıldı Lordum! 💧");
+        } catch (e) { alert("Hata: " + e); }
       }
     </script>
 
     <style>
-        body { font-family: sans-serif; text-align: center; background-color: #ffeef2; padding: 20px; }
-        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h1 { color: #ff85a2; }
-        .btn-sari { background-color: #ffb703; color: white; padding: 15px 30px; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; margin-bottom: 20px; width: 100%; }
-        .btn-mavi { background-color: #219ebc; color: white; padding: 10px; border: none; border-radius: 10px; width: 45%; margin: 5px; cursor: pointer; }
+        :root { --water-color: #3498db; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; background-color: #fce4ec; margin: 0; padding: 20px; transition: 0.5s; }
+        .card { background: white; padding: 25px; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
+        h1 { color: #f06292; margin-bottom: 5px; }
+        .stats { font-size: 20px; font-weight: bold; color: #333; margin-bottom: 20px; }
+        
+        /* Bardak ve Su Animasyonu */
+        .glass-container { position: relative; width: 120px; height: 180px; border: 5px solid #333; border-top: none; margin: 20px auto; border-radius: 0 0 20px 20px; overflow: hidden; background: #eee; }
+        .water { position: absolute; bottom: 0; left: 0; width: 100%; background: var(--water-color); height: 0%; transition: height 1s ease-in-out; }
+        
+        .btn { padding: 12px; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; transition: 0.3s; margin: 5px; }
+        .btn-main { background: #ffb703; color: white; width: 100%; font-size: 16px; margin-bottom: 15px; }
+        .btn-water { background: #219ebc; color: white; width: 45%; }
+        .controls { margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
+        input { padding: 8px; border-radius: 8px; border: 1px solid #ddd; width: 60px; text-align: center; }
+        .color-picker { margin-top: 10px; display: flex; justify-content: center; gap: 10px; }
+        .dot { width: 25px; height: 25px; border-radius: 50%; cursor: pointer; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h1>BİK Pro 🌸</h1>
-        <p>Bugün: 0 / 2000 ml</p>
-        
-        <!-- Bardağın veya içeriğin buraya gelecek -->
-        <div style="height: 150px; border: 2px solid #333; width: 100px; margin: 20px auto; border-radius: 0 0 20px 20px;"></div>
+<div class="card">
+    <h1>BİK Pro 🌸</h1>
+    <div class="stats" id="progressText">Bugün: 0 / 2000 ml</div>
 
-        <button class="btn-sari" onclick="aboneOl()">BİLDİRİMLERİ AKTİF ET 🔔</button>
-
-        <div class="butonlar">
-            <button class="btn-mavi">+150ml</button>
-            <button class="btn-mavi">+200ml</button>
-            <button class="btn-mavi">+300ml</button>
-            <button class="btn-mavi">+500ml</button>
-        </div>
+    <div class="glass-container">
+        <div id="waterLevel" class="water"></div>
     </div>
+
+    <button class="btn btn-main" onclick="bildirimAc()">BİLDİRİMLERİ AKTİF ET 🔔</button>
+
+    <div class="buttons">
+        <button class="btn btn-water" onclick="suEkle(200)">+200ml</button>
+        <button class="btn btn-water" onclick="suEkle(500)">+500ml</button>
+    </div>
+
+    <div class="controls">
+        <p>⏰ Hatırlatıcı Kur (Dakika):</p>
+        <input type="number" id="remindMin" value="30">
+        <button class="btn" style="background:#8e44ad; color:white;" onclick="timerKur()">Kur</button>
+        <button class="btn" style="background:#e74c3c; color:white;" onclick="sifirla()">Sıfırla</button>
+    </div>
+
+    <p>🎨 Bardak Rengi:</p>
+    <div class="color-picker">
+        <div class="dot" style="background:#3498db" onclick="renkDegis('#3498db')"></div>
+        <div class="dot" style="background:#2ecc71" onclick="renkDegis('#2ecc71')"></div>
+        <div class="dot" style="background:#e67e22" onclick="renkDegis('#e67e22')"></div>
+        <div class="dot" style="background:#e74c3c" onclick="renkDegis('#e74c3c')"></div>
+    </div>
+</div>
+
+<script>
+    let toplam = 0;
+    const hedef = 2000;
+
+    function suEkle(miktar) {
+        toplam += miktar;
+        if(toplam > hedef) toplam = hedef;
+        guncelle();
+    }
+
+    function guncelle() {
+        const yuzde = (toplam / hedef) * 100;
+        document.getElementById('waterLevel').style.height = yuzde + '%';
+        document.getElementById('progressText').innerText = `Bugün: ${toplam} / ${hedef} ml`;
+    }
+
+    function sifirla() {
+        toplam = 0;
+        guncelle();
+    }
+
+    function renkDegis(renk) {
+        document.documentElement.style.setProperty('--water-color', renk);
+    }
+
+    function timerKur() {
+        let dk = document.getElementById('remindMin').value;
+        alert(dk + " dakika sonra hatırlatıcı çalacak (Simülasyon Aktif) Lordum!");
+        // Not: Gerçek zamanlı arka plan hatırlatıcıları OneSignal panelinden manuel veya API ile gönderilir.
+    }
+</script>
 
 </body>
 </html>
